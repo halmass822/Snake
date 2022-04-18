@@ -108,9 +108,7 @@ var movementAllowed = false;
             let currentXCoord = getXCoord(headPosition);
             let currentYCoord = getYCoord(headPosition);
             proposedHeadPosition = digitize(currentXCoord + proposedVector[0]) + digitize(currentYCoord + proposedVector[1]);
-            console.log(proposedHeadPosition);
-            console.log(bodySegmentsPositions[bodySegmentsPositions.length - 1]);
-            if(proposedHeadPosition === bodySegmentsPositions[bodySegmentsPositions.length - 1]) {
+            if(proposedHeadPosition === bodySegmentsPositions[bodySegmentsPositions.length - 2]) {
                 console.log(`attempting to turn around, input movement ignored`);
             } else {
                 currentVector = proposedVector;
