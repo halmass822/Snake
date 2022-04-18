@@ -60,7 +60,6 @@ function createGrid(inputWidth,inputHeight) {
         outputRow.className = 'gridRow';
         for(j = 0 ; j < inputWidth ; j++) {
             let outputTile = document.createElement('p');
-            console.log(digitize(j + 1) + digitize(inputHeight - i));
             let tileCoordinate = digitize(j + 1) + digitize(inputHeight - i)
             outputTile.className = 'gridTile';
             outputTile.id = tileCoordinate;
@@ -76,35 +75,53 @@ function createGrid(inputWidth,inputHeight) {
 var gridTiles = [];
 var filledTiles = [];
 var currentVector = [];
-var headPosition;
+var headPosition = '0505';
 var bodySegmentsPositions = [];
-var foodPosition;
-var gridDimensions;
+var foodPosition = '0505';
+var gridDimensions = [];
+var movementAllowed = false;
 
 //main functions
 
     //input key, returns vector
-    function pickDirection(inputKey) {
-        let proposedVector;
-        switch(inputKey){
-            case 'a':
-                proposedVector = [-1,0];
-            break;
-            case 's':
-                proposedVector = [0,-1];
-            break;
-            case 'd':
-                proposedVector = [1,0];
-            break;
-            case 'w':
-                proposedVector = [0,1];
-            break;
-            default:
-                console.log(`input ${inputKey} ignored`);
-                proposedVector = null;
-            break;
+    function changeDirection(inputKey) {
+        if(movementAllowed) {
+            let proposedVector;
+            switch(inputKey){
+                case 'a':
+                    proposedVector = [-1,0];
+                break;
+                case 's':
+                    proposedVector = [0,-1];
+                break;
+                case 'd':
+                    proposedVector = [1,0];
+                break;
+                case 'w':
+                    proposedVector = [0,1];
+                break;
+                default:
+                    console.log(`input ${inputKey} ignored`);
+                    proposedVector = null;
+                break;
+            }
+            let currentXCoord = getXCoord(headPosition);
+            let currentYCoord = getYCoord(headPosition);
+            proposedHeadPosition = digitize(currentXCoord + proposedVector[0]) + digitize(currentYCoord + proposedVector[1]);
+            console.log(proposedHeadPosition);
+            console.log(bodySegmentsPositions[bodySegmentsPositions.length - 1]);
+            if(proposedHeadPosition === bodySegmentsPositions[bodySegmentsPositions.length - 1]) {
+                console.log(`attempting to turn around, input movement ignored`);
+            } else {
+                currentVector = proposedVector;
+                moveSnake();
+                setSnakeMovement(false);
+                setSnakeMovement(true);
+            }
+        } else {
+            console.log(`movement disallowed, input ignored`)
         }
-        return proposedVector;
+
     }
 
     //checks if position is out of bounds or filled
@@ -116,15 +133,11 @@ var gridDimensions;
         }
     }
 
-
-    //moves the head
-    function moveSnake(inputVector) {
+    //moves the head based on the current vector
+    function moveSnake() {
         let currentXCoord = getXCoord(headPosition);
         let currentYCoord = getYCoord(headPosition);
-        let proposedHeadPosition = digitize(currentXCoord + inputVector[0]) + digitize(currentYCoord + inputVector[1]);
-        if (bodySegmentsPositions.includes(proposedHeadPosition)) {
-            proposedHeadPosition = digitize(currentXCoord + currentVector[0]) + digitize(currentYCoord + currentVector[1]);
-        }
+        proposedHeadPosition = digitize(currentXCoord + currentVector[0]) + digitize(currentYCoord + currentVector[1]);
         if(checkPosition(proposedHeadPosition)) {
             fillTile(proposedHeadPosition);
             headPosition = proposedHeadPosition;
@@ -145,9 +158,12 @@ var gridDimensions;
 
     //moves the fruit
     function getNewFoodPosition() {
+        console.log(`getNewFoodPosition() triggered`)
         let newFoodPosition;
+        console.log(gridDimensions);
         do {
-            newFoodPosition = digitize(Math.floor(Math.random() * (gridDimensions[0] + 0.999))) + digitize(Math.floor(Math.random() * (gridDimensions[1] + 0.999)))            
+            newFoodPosition = digitize(Math.floor(Math.random()*gridDimensions[0]) + 1) + digitize(Math.floor(Math.random()*(gridDimensions[1]) + 1))
+            console.log(newFoodPosition);
         } while (filledTiles.includes(newFoodPosition));
         foodPosition = newFoodPosition;
         document.getElementById(foodPosition).style.backgroundColor = "blue";
@@ -158,7 +174,7 @@ var gridDimensions;
     var movingSnake;
     function setSnakeMovement(inputBool) {
         if(inputBool) {
-            movingSnake = setInterval(moveSnake, 500);
+            movingSnake = setInterval(moveSnake, 300);
         } else {
             clearInterval(movingSnake);
         }
@@ -166,35 +182,45 @@ var gridDimensions;
     
     //stops the snake's movement, displays the appropriate overlay
     function gameOver() {
+        movementAllowed = false;
+        console.log(`gameOver() triggered`);
         setSnakeMovement(false);
-        document.getElementById("GameOverOverlay").hidden = "false";
+        document.getElementById("GameOverOverlay").style.display = "block";
     }
 
     function victory() {
+        movementAllowed = false
+        console.log(`victory() triggered`);
         setSnakeMovement(false);
-        document.getElementById("winnerOverlay").hidden="false";
+        document.getElementById("winnerOverlay").style.display = "block";
     }
 
     function startGame() {
-        document.getElementById(startGameOverlay).hidden = "true";
-        document.getElementById(winnerOverlay).hidden = "true";
-        document.getElementById(GameOverOverlay).hidden = "true";
-        bodySegmentsPositions = [];
-        filledTiles = [];
+        console.log(`startGame() triggered`);
+        document.getElementById("startGameOverlay").style.display = "none";
+        document.getElementById("winnerOverlay").style.display = "none";
+        document.getElementById("GameOverOverlay").style.display = "none";
         gridTiles.forEach((x) => emptyTile(x));
         currentVector = [1,0];
         headPosition = `03` + digitize(Math.floor(gridDimensions[1]/2));
+        bodySegmentsPositions = [headPosition];
+        filledTiles = [headPosition];
+        changeToGrey(headPosition);
         getNewFoodPosition();
         setSnakeMovement(true);
+        movementAllowed = true
     }
 
 //generating grid
 
 generatedGrid = createGrid(10,10);
 document.getElementById("gridContainer").appendChild(generatedGrid[0]);
-generatedTiles = generatedGrid[1];
+gridTiles = generatedGrid[1];
+gridDimensions = [10,10];
 
 //event listeners
-document.getElementById("startGameButton").addEventListener('click', startGame());
-document.getElementById("RestartGame").addEventListener('click', startGame());
-document.getElementById("winRestartGame").addEventListener('click', startGame());
+
+document.getElementById("startGameButton").addEventListener('click', startGame);
+document.getElementById("RestartGame").addEventListener('click', startGame);
+document.getElementById("winRestartGame").addEventListener('click', startGame);
+document.body.addEventListener('keypress', (event) => changeDirection(event.key));

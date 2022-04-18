@@ -38,6 +38,11 @@ body {
     right: 0;
     top: 150px;
     text-align: center;
+    display: none;
+}
+
+#startGameOverlay {
+  display: block;
 }
 
 button {
