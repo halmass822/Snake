@@ -156,12 +156,9 @@ var movementAllowed = false;
 
     //moves the fruit
     function getNewFoodPosition() {
-        console.log(`getNewFoodPosition() triggered`)
         let newFoodPosition;
-        console.log(gridDimensions);
         do {
             newFoodPosition = digitize(Math.floor(Math.random()*gridDimensions[0]) + 1) + digitize(Math.floor(Math.random()*(gridDimensions[1]) + 1))
-            console.log(newFoodPosition);
         } while (filledTiles.includes(newFoodPosition));
         foodPosition = newFoodPosition;
         document.getElementById(foodPosition).style.backgroundColor = "blue";
@@ -175,6 +172,7 @@ var movementAllowed = false;
             movingSnake = setInterval(moveSnake, 300);
         } else {
             clearInterval(movingSnake);
+            
         }
     }
     
